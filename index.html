@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🃏 Rami Familial Cloud</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .sync-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Family Code Section */
+        .family-code-section {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .family-code-section.hidden {
+            display: none;
+        }
+
+        .family-code-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .family-code-input input {
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            text-transform: uppercase;
+            width: 200px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .family-code-display {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 14px;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        /* Content */
+        .content {
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Section */
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .section h3 {
+            color: #343a40;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Players List */
+        .players-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .player-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .player-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-card.selected {
+            border-color: #56ab2f;
+            background: #e8f5e9;
+        }
+
+        .player-card .name {
+            font-weight: bold;
+            color: #343a40;
+            margin-bottom: 5px;
+        }
+
+        .player-card .stats {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        .player-card .remove-btn {
+            margin-top: 8px;
+            padding: 4px 8px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        /* Add Player Form */
+        .add-player-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .add-player-form input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* Game Interface */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .game-info {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .game-info strong {
+            color: #343a40;
+        }
+
+        /* Score Table */
+        .score-table {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            font-size: 13px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .total-row {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .total-row.winner {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .total-row.loser {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+
+        /* Manche Form */
+        .manche-form {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .form-row {
+            margin-bottom: 15px;
+        }
+
+        .form-row label {
+            display: block;
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 8px;
+        }
+
+        .form-row select,
+        .form-row input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .score-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .score-input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .score-input-group input {
+            padding: 8px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Ranking */
+        .ranking-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ranking-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .ranking-item.first {
+            border-left-color: #ffd700;
+            background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+        }
+
+        .ranking-item.second {
+            border-left-color: #c0c0c0;
+        }
+
+        .ranking-item.third {
+            border-left-color: #cd7f32;
+        }
+
+        .rank-position {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .rank-info {
+            flex: 1;
+        }
+
+        .rank-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #343a40;
+        }
+
+        .rank-details {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 3px;
+        }
+
+        .rank-score {
+            text-align: right;
+            font-weight: bold;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* History */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .history-date {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .history-winner {
+            font-weight: bold;
+            color: #56ab2f;
+        }
+
+        .history-details {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .tab {
+                font-size: 12px;
+                padding: 12px 8px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+        }
+
+        /* Winner Animation */
+        .winner-announcement {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+            animation: celebrateWinner 0.5s ease-out;
+        }
+
+        @keyframes celebrateWinner {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .winner-announcement h2 {
+            color: #343a40;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .winner-announcement .winner-name {
+            font-size: 36px;
+            font-weight: bold;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #343a40;
+            margin-bottom: 10px;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.9) rotate(180deg);
+        }
+
+        .refresh-btn.spinning {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="sync-status">
+                <span class="sync-dot"></span>
+                <span>Cloud</span>
+            </div>
+            <h1>🃏 Rami Familial</h1>
+            <p class="subtitle">Compteur de Points Cloud</p>
+        </div>
+
+        <!-- Family Code Section -->
+        <div class="family-code-section" id="familyCodeSection">
+            <h3>Code Famille</h3>
+            <p style="color: #6c757d; font-size: 14px; margin-top: 10px;">
+                Entrez ou créez votre code famille pour synchroniser avec toute la famille
+            </p>
+            <div class="family-code-input">
+                <input type="text" id="familyCodeInput" placeholder="FAMILLE2024" maxlength="15">
+                <button class="btn btn-primary" onclick="setFamilyCode()">Valider</button>
+            </div>
+            <p style="color: #6c757d; font-size: 12px; margin-top: 15px;">
+                💡 Partagez ce code avec votre famille pour accéder aux mêmes données
+            </p>
+        </div>
+
+        <!-- Current Family Code Display -->
+        <div class="family-code-section hidden" id="currentFamilyCode">
+            <p style="color: #6c757d; font-size: 14px; margin-bottom: 10px;">
+                Code Famille:
+            </p>
+            <div class="family-code-display" id="familyCodeDisplay"></div>
+            <button class="btn btn-danger" onclick="changeFamilyCode()" style="margin-top: 15px; font-size: 12px; padding: 8px 15px;">
+                Changer de code
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('famille')">👥 Famille</button>
+            <button class="tab" onclick="showTab('partie')">🎮 Partie</button>
+            <button class="tab" onclick="showTab('stats')">📊 Stats</button>
+            <button class="tab" onclick="showTab('historique')">📚 Historique</button>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Famille Tab -->
+            <div id="famille" class="tab-content active">
+                <div class="section">
+                    <h3>👥 Membres de la Famille</h3>
+                    <div class="add-player-form">
+                        <input type="text" id="newPlayerName" placeholder="Nom du joueur" maxlength="15">
+                        <button class="btn btn-primary" onclick="addPlayer()">+ Ajouter</button>
+                    </div>
+                    <div id="playersListContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Chargement des joueurs...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🎯 Nouvelle Partie</h3>
+                    <p style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">
+                        Sélectionnez 2 à 6 joueurs pour commencer une partie
+                    </p>
+                    <div id="selectedPlayersInfo" style="background: #e8f5e9; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                        <strong>Aucun joueur sélectionné</strong>
+                    </div>
+                    <button class="btn btn-success btn-full" onclick="startNewGame()">🎲 Commencer la Partie</button>
+                </div>
+            </div>
+
+            <!-- Partie Tab -->
+            <div id="partie" class="tab-content">
+                <div id="noGameMessage" class="empty-state">
+                    <div class="empty-state-icon">🎲</div>
+                    <h3>Aucune partie en cours</h3>
+                    <p>Allez dans l'onglet "Famille" pour commencer une nouvelle partie</p>
+                </div>
+
+                <div id="gameInterface" style="display: none;">
+                    <div class="section">
+                        <div class="game-header">
+                            <div>
+                                <h3 id="gameTitle">Partie en Cours</h3>
+                                <div class="game-info">
+                                    <strong>Joueurs:</strong> <span id="gamePlayersCount"></span>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" onclick="endCurrentGame()">Terminer</button>
+                        </div>
+
+                        <div class="score-table">
+                            <table id="scoresTable">
+                                <thead>
+                                    <tr>
+                                        <th>Manche</th>
+                                        <th>Gagnant</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scoresTableBody"></tbody>
+                                <tfoot id="scoresTableFoot"></tfoot>
+                            </table>
+                        </div>
+
+                        <div id="winnerAnnouncement" style="display: none;"></div>
+                    </div>
+
+                    <div class="manche-form">
+                        <h3 style="margin-bottom: 15px;">➕ Ajouter une Manche</h3>
+                        
+                        <div class="form-row">
+                            <label>🏆 Gagnant de la manche</label>
+                            <select id="mancheWinner">
+                                <option value="">-- Sélectionner --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label>🎯 Type de victoire</label>
+                            <select id="mancheVictoryType">
+                                <option value="deux_fois">Deux fois (-20 pts)</option>
+                                <option value="un_coup">D'un coup (-50 pts)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label>⚡ Options spéciales</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="mancheJoker">
+                                    <span>🃏 Avec Joker (×2 gagnant)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="mancheFriche">
+                                    <span>🔥 Friche (×2 tous)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label>📝 Points restants pour les perdants</label>
+                            <div class="scores-grid" id="losersScoresGrid"></div>
+                        </div>
+
+                        <button class="btn btn-success btn-full" onclick="saveManche()">✅ Enregistrer la Manche</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Tab -->
+            <div id="stats" class="tab-content">
+                <div class="section">
+                    <h3>📊 Statistiques Générales</h3>
+                    <div class="stats-grid" id="generalStats">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🏆 Classement Familial</h3>
+                    <p style="color: #6c757d; font-size: 13px; margin-bottom: 15px;">
+                        Au Rami, le meilleur joueur a le score le plus négatif !
+                    </p>
+                    <div class="ranking-list" id="rankingList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique Tab -->
+            <div id="historique" class="tab-content">
+                <div class="section">
+                    <h3>📚 Historique des Parties</h3>
+                    <div class="history-list" id="historyList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="refreshData()" title="Rafraîchir les données">
+        🔄
+    </button>
+
+    <script src="app.js"></script>
+</body>
+</html>
